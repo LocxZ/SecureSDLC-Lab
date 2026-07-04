@@ -20,7 +20,3 @@ jobs:
 
       - name: Run Semgrep
         run: semgrep scan --config p/javascript --error .
-<<<<<<< HEAD
-
-=======
->>>>>>> main
