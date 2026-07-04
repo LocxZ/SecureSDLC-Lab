@@ -54,9 +54,13 @@ app.get("/", (req, res) => {
 app.post("/login", (req, res) => {
     const { username, password } = req.body;
 
-    const query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
+    const query = `
+        SELECT * FROM users
+        WHERE username = ?
+        AND password = ?
+    `;
 
-    db.get(query, (err, user) => {
+    db.get(query, [username, password], (err, user) => {
         if (err) {
             console.error("Database error:", err.message);
             return res.status(500).send("Database error");
