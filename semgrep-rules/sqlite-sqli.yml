@@ -1,0 +1,14 @@
+rules:
+  - id: express-input-to-sqlite-query
+    mode: taint
+    languages:
+      - javascript
+    severity: ERROR
+
+    message: User-controlled Express request data flows into a SQLite query.
+
+    pattern-sources:
+      - pattern: $REQ.body
+
+    pattern-sinks:
+      - pattern: $DB.get($QUERY, ...)
