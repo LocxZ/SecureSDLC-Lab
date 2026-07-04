@@ -9,6 +9,9 @@ rules:
 
     pattern-sources:
       - pattern: $REQ.body
+        exact: true
 
     pattern-sinks:
-      - pattern: $DB.get($QUERY, ...)
+      - patterns:
+          - pattern: $DB.get($QUERY, ...)
+          - pattern-not: $DB.get($QUERY, [$...PARAMS], ...)
