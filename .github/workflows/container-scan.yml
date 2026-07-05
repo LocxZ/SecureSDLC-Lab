@@ -1,0 +1,28 @@
+name: Container Image Scan
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  trivy-image:
+    name: Trivy Image Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build TaskFlow image
+        run: docker build -t taskflow:${{ github.sha }} .
+
+      - name: Scan container image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: taskflow:${{ github.sha }}
+          format: table
+          severity: HIGH,CRITICAL
+          exit-code: 1
+          ignore-unfixed: true
