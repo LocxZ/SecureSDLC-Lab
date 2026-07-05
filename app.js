@@ -1,5 +1,6 @@
 const sqlite3 = require("sqlite3").verbose();
 const express = require("express");
+const bcrypt = require("bcrypt");
 
 const app = express();
 const PORT = 3000;
@@ -17,10 +18,28 @@ db.run(`
     )
 `);
 
-db.run(`
-    INSERT OR IGNORE INTO users (id, username, password)
-    VALUES (1, 'admin', 'admin123')
-`);
+async function createDefaultAdmin() {
+    try {
+        const hashedPassword = await bcrypt.hash("admin123", 12);
+
+        db.run(
+            `
+            INSERT OR IGNORE INTO users (id, username, password)
+            VALUES (?, ?, ?)
+            `,
+            [1, "admin", hashedPassword],
+            (err) => {
+                if (err) {
+                    console.error("Failed to create admin:", err.message);
+                }
+            }
+        );
+    } catch (err) {
+        console.error("Password hashing error:", err.message);
+    }
+}
+
+createDefaultAdmin();
 
 app.get("/", (req, res) => {
     res.send(`
@@ -57,20 +76,33 @@ app.post("/login", (req, res) => {
     const query = `
         SELECT * FROM users
         WHERE username = ?
-        AND password = ?
     `;
 
-    db.get(query, [username, password], (err, user) => {
+    db.get(query, [username], async (err, user) => {
         if (err) {
             console.error("Database error:", err.message);
             return res.status(500).send("Database error");
         }
 
-        if (user) {
-            return res.send(`Welcome ${user.username}`);
+        if (!user) {
+            return res.status(401).send("Invalid credentials");
         }
 
-        return res.status(401).send("Invalid credentials");
+        try {
+            const passwordMatches = await bcrypt.compare(
+                password,
+                user.password
+            );
+
+            if (passwordMatches) {
+                return res.send(`Welcome ${user.username}`);
+            }
+
+            return res.status(401).send("Invalid credentials");
+        } catch (err) {
+            console.error("Password comparison error:", err.message);
+            return res.status(500).send("Authentication error");
+        }
     });
 });
 
