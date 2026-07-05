@@ -13,13 +13,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: Build TaskFlow image
         run: docker build -t taskflow:${{ github.sha }} .
 
       - name: Scan container image
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
         with:
           image-ref: taskflow:${{ github.sha }}
           format: table
