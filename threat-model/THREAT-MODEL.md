@@ -144,7 +144,7 @@ A developer may make or approve a security-sensitive code or workflow change and
 
 ### I - Information Disclosure
 
-#### TH-04: Plaintext user passwords are exposed through database compromise
+#### **Completed** TH-04: Plaintext user passwords are exposed through database compromise
 
 TaskFlow stores user passwords in plaintext in the SQLite database.
 
@@ -167,6 +167,15 @@ An attacker who obtains access to the database file may directly read user crede
 - Password hashing
 - Gitleaks secret scanning
 - Restricted access to application data
+
+**Remediation Status:** Implemented
+
+**Implemented Control:**
+
+- User passwords are hashed using bcrypt with a cost factor of 12.
+- Authentication retrieves the user by username and verifies the submitted password using bcrypt comparison.
+- Plaintext passwords are no longer stored in the SQLite database.
+
 
 ### D - Denial of Service
 
