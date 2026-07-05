@@ -12,6 +12,10 @@ FROM node:24.17.0-alpine
 
 WORKDIR /app
 
+RUN rm -rf /usr/local/lib/node_modules/npm \
+    && rm -f /usr/local/bin/npm \
+    && rm -f /usr/local/bin/npx
+
 COPY --from=builder /app/node_modules ./node_modules
 
 COPY . .
