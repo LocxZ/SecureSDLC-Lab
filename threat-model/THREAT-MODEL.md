@@ -225,6 +225,22 @@ An authenticated low-privileged user may attempt to access administrative functi
 - Server-side authorization checks
 - Authorization testing
 
+**Remediation Status:** Implemented
+
+**Implemented Controls:**
+
+- Server-side sessions maintain authenticated user state.
+- Session IDs are regenerated after successful authentication to reduce session fixation risk.
+- User roles are loaded from the database after authentication and stored in server-side session state.
+- Authentication middleware blocks unauthenticated access to protected functionality.
+- Authorization middleware enforces the admin role on administrative functionality.
+- Low-privileged users receive a 403 Forbidden response when accessing admin-only functionality.
+- Session secrets are provided through runtime environment variables and are not hardcoded in application source code.
+
+**Deployment Note:**
+
+The current implementation uses the default express-session MemoryStore for lab purposes. A production deployment must use a production-ready session store.
+
 ## 6. Risk Prioritization
 
 | Threat ID | Threat | Likelihood | Impact | Risk Score | Priority |
