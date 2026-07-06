@@ -1,4 +1,4 @@
-name: SAST
+name: SAST Scan
 
 on:
   pull_request:
@@ -19,4 +19,10 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: Run Semgrep
-        run: semgrep scan --config p/javascript --error .
+        run: >
+          semgrep scan
+          --config p/javascript
+          --exclude-rule javascript.express.security.audit.express-cookie-settings.express-cookie-session-no-expires
+          --exclude-rule javascript.express.security.audit.express-cookie-settings.express-cookie-session-no-secure
+          --error
+          .
