@@ -18,12 +18,17 @@ app.use(express.json());
 
 app.use(
     session({
+        name: "taskflow.sid",
         secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: false,
         cookie: {
             httpOnly: true,
-            sameSite: "lax"
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+            domain: process.env.COOKIE_DOMAIN,
+            maxAge: 1000 * 60 * 30
         }
     })
 );
@@ -231,7 +236,13 @@ app.post(
                     .send("Logout failed");
             }
 
-            res.clearCookie("connect.sid");
+            res.clearCookie("taskflow.sid", {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                path: "/",
+                domain: process.env.COOKIE_DOMAIN
+            });
 
             return res.redirect("/");
         });
