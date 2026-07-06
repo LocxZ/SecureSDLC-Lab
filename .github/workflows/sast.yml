@@ -19,4 +19,4 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: Run Semgrep
-        run: semgrep scan --config p/javascript --error .
+        run: semgrep scan --config p/owaasp-top-ten --error .
