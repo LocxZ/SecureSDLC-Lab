@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: taskflow
+  namespace: taskflow
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: taskflow
+
+  template:
+    metadata:
+      labels:
+        app: taskflow
+
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: taskflow
+          image: taskflow:1.3
+
+          ports:
+            - containerPort: 3000
+
+          env:
+            - name: DB_PATH
+              value: /data/taskflow.db
+
+          volumeMounts:
+            - name: taskflow-data
+              mountPath: /data
+
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+
+      volumes:
+        - name: taskflow-data
+          emptyDir: {}

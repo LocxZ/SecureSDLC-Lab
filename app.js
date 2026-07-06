@@ -11,7 +11,9 @@ if (!process.env.SESSION_SECRET) {
     process.exit(1);
 }
 
-const db = new sqlite3.Database("./taskflow.db");
+const db = new sqlite3.Database(
+    process.env.DB_PATH || "./taskflow.db"
+);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
