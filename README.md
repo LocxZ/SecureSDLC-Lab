@@ -169,7 +169,8 @@ user123
 ## Screenshots
 
 - GitHub Actions
-<img width="332" height="309" alt="image" src="https://github.com/user-attachments/assets/82803b8d-e286-4d80-8dfa-28caacaa3610" />
+<img width="332" height="309" alt="image" src="https://github.com/user-attachments/assets/82803b8d-e286-4d80-8dfa-28caacaa3610" /> <img width="967" height="314" alt="2026-07-13_10-25" src="https://github.com/user-attachments/assets/2e373ca4-3c5a-40d0-bdfe-859a119209dd" />
+
 
 
 - Threat Model
