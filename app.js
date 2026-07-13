@@ -2,6 +2,7 @@ const sqlite3 = require("sqlite3").verbose();
 const express = require("express");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
+const helmet = require("helmet");
 
 const app = express();
 const PORT = 3000;
@@ -13,6 +14,27 @@ if (!process.env.SESSION_SECRET) {
 
 const db = new sqlite3.Database(
     process.env.DB_PATH || "./taskflow.db"
+);
+
+app.disable("x-powered-by");
+
+app.use(
+    helmet({
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'"],
+                styleSrc: ["'self'"],
+                imgSrc: ["'self'", "data:"],
+                objectSrc: ["'none'"],
+                frameAncestors: ["'none'"],
+                upgradeInsecureRequests: []
+            }
+        },
+        referrerPolicy: {
+            policy: "no-referrer"
+        }
+    })
 );
 
 app.use(express.urlencoded({ extended: true }));
@@ -30,7 +52,7 @@ app.use(
             sameSite: "lax",
             path: "/",
             domain: process.env.COOKIE_DOMAIN,
-            maxAge: 1000 * 60 * 30
+            maxAge: 30 * 60 * 1000
         }
     })
 );
@@ -55,7 +77,8 @@ async function createDefaultUsers() {
 
         db.run(
             `
-            INSERT OR IGNORE INTO users (id, username, password, role)
+            INSERT OR IGNORE INTO users
+            (id, username, password, role)
             VALUES (?, ?, ?, ?)
             `,
             [1, "admin", adminPassword, "admin"]
@@ -63,13 +86,14 @@ async function createDefaultUsers() {
 
         db.run(
             `
-            INSERT OR IGNORE INTO users (id, username, password, role)
+            INSERT OR IGNORE INTO users
+            (id, username, password, role)
             VALUES (?, ?, ?, ?)
             `,
             [2, "user", userPassword, "user"]
         );
     } catch (err) {
-        console.error("Failed to create default users:", err.message);
+        console.error(err.message);
     }
 }
 
@@ -98,6 +122,7 @@ app.get("/", (req, res) => {
         <h2>Login</h2>
 
         <form action="/login" method="POST">
+
             <input
                 type="text"
                 name="username"
@@ -114,50 +139,46 @@ app.get("/", (req, res) => {
 
             <br><br>
 
-            <button type="submit">Login</button>
+            <button type="submit">
+                Login
+            </button>
+
         </form>
     `);
 });
 
 app.post("/login", (req, res) => {
+
     const { username, password } = req.body;
 
-    const query = `
-        SELECT * FROM users
-        WHERE username = ?
-    `;
+    db.get(
+        "SELECT * FROM users WHERE username = ?",
+        [username],
+        async (err, user) => {
 
-    db.get(query, [username], async (err, user) => {
-        if (err) {
-            console.error("Database error:", err.message);
+            if (err) {
+                return res.status(500).send("Database error");
+            }
 
-            return res.status(500).send("Database error");
-        }
+            if (!user) {
+                return res.status(401).send("Invalid credentials");
+            }
 
-        if (!user) {
-            return res.status(401).send("Invalid credentials");
-        }
-
-        try {
-            const passwordMatches = await bcrypt.compare(
+            const valid = await bcrypt.compare(
                 password,
                 user.password
             );
 
-            if (!passwordMatches) {
+            if (!valid) {
                 return res.status(401).send("Invalid credentials");
             }
 
             req.session.regenerate((err) => {
-                if (err) {
-                    console.error(
-                        "Session regeneration error:",
-                        err.message
-                    );
 
+                if (err) {
                     return res
                         .status(500)
-                        .send("Authentication error");
+                        .send("Session error");
                 }
 
                 req.session.user = {
@@ -166,8 +187,8 @@ app.post("/login", (req, res) => {
                     role: user.role
                 };
 
-                return res.send(`
-                    <h1>Welcome ${user.username}</h1>
+                res.send(`
+                    <h2>Welcome ${user.username}</h2>
 
                     <p>Role: ${user.role}</p>
 
@@ -178,23 +199,15 @@ app.post("/login", (req, res) => {
                     <br><br>
 
                     <form action="/logout" method="POST">
-                        <button type="submit">
+                        <button>
                             Logout
                         </button>
                     </form>
                 `);
             });
-        } catch (err) {
-            console.error(
-                "Authentication error:",
-                err.message
-            );
 
-            return res
-                .status(500)
-                .send("Authentication error");
         }
-    });
+    );
 });
 
 app.get(
@@ -202,6 +215,7 @@ app.get(
     requireAuth,
     requireAdmin,
     (req, res) => {
+
         res.send(`
             <h1>Admin Dashboard</h1>
 
@@ -214,7 +228,7 @@ app.get(
             </p>
 
             <form action="/logout" method="POST">
-                <button type="submit">
+                <button>
                     Logout
                 </button>
             </form>
@@ -226,28 +240,20 @@ app.post(
     "/logout",
     requireAuth,
     (req, res) => {
-        req.session.destroy((err) => {
-            if (err) {
-                console.error(
-                    "Logout error:",
-                    err.message
-                );
 
+        req.session.destroy((err) => {
+
+            if (err) {
                 return res
                     .status(500)
                     .send("Logout failed");
             }
 
-            res.clearCookie("taskflow.sid", {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "lax",
-                path: "/",
-                domain: process.env.COOKIE_DOMAIN
-            });
+            res.clearCookie("taskflow.sid");
 
-            return res.redirect("/");
+            res.redirect("/");
         });
+
     }
 );
 
