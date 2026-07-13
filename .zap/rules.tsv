@@ -1,0 +1,5 @@
+10049	IGNORE	Reviewed - Cache-Control header not required for this lab application.
+10055	IGNORE	Reviewed - CSP fallback directive accepted for this lab.
+10063	IGNORE	Reviewed - Permissions-Policy intentionally omitted for lab scope.
+10111	IGNORE	Reviewed - Authentication endpoint expected.
+90004	IGNORE	Reviewed - Cross-Origin-Embedder-Policy not required for this application.
