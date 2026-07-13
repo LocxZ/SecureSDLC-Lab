@@ -7,13 +7,12 @@ on:
       - main
 
 jobs:
-  zap_scan:
-
+  zap:
+    name: OWASP ZAP Baseline
     runs-on: ubuntu-latest
 
     steps:
-
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: Setup Node.js
@@ -26,15 +25,14 @@ jobs:
         run: npm ci
 
       - name: Start TaskFlow
+        env:
+          SESSION_SECRET: github-actions-secret
         run: |
-          SESSION_SECRET=test-secret \
           node app.js &
-
-      - name: Wait
-        run: sleep 15
+          sleep 10
 
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.12.0
-
         with:
           target: "http://localhost:3000"
+          rules_file_name: ".zap/rules.tsv"
