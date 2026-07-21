@@ -193,7 +193,6 @@ user123
 
 ## What I learned
 
-Before this project I mostly worked with DAST.
 
 This project helped me understand how different security checks fit into the software development lifecycle.
 
